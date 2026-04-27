@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}GEOSMART{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/20">
+  <div class="text-center animate-fade-in">
+    <div class="flex items-center justify-center mb-6">
+      <i data-lucide="leaf" class="w-20 h-20 text-primary animate-glow-pulse"></i>
+    </div>
+    <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
+      ♻️ GEOSMART
+    </h1>
+    <p class="text-xl text-muted-foreground animate-glow-pulse">
+      Together for a Cleaner Planet
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  setTimeout(function() {
+    window.location.href = "{{ url_for('login') }}";
+  }, 3000);
+</script>
+{% endblock %}

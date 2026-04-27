@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}GEOSMART – Ward Intelligence{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-background via-background to-primary/20">
+  <div class="container mx-auto px-4 py-16">
+    <header class="flex flex-col items-center gap-6 text-center">
+      <span class="badge badge-outline uppercase tracking-wide">
+        Ward intelligence for a cleaner planet
+      </span>
+      <h1 class="max-w-4xl text-4xl font-semibold leading-tight md:text-5xl">
+        GEOSMART brings real-time waste analytics, rapid complaint closure, and civic coordination into one command centre.
+      </h1>
+      <p class="max-w-2xl text-base text-muted-foreground md:text-lg">
+        Track waste composition, forecast health risks, mobilise municipal teams, and keep citizens engaged—without juggling spreadsheets or phone calls.
+      </p>
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <a href="{{ url_for('signup') }}" class="btn btn-default btn-lg gap-2">Join the movement</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline btn-lg">Access your dashboard</a>
+      </div>
+    </header>
+
+    <section class="mt-16 grid gap-6 md:grid-cols-3">
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-content flex flex-col gap-3 p-6">
+          <i data-lucide="leaf" class="h-10 w-10 text-primary"></i>
+          <h3 class="text-xl font-semibold">Analyze every waste stream</h3>
+          <p class="text-sm text-muted-foreground">
+            Capture waste weights, see composition instantly, and unlock tailored containment and diversion plans.
+          </p>
+        </div>
+      </div>
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-content flex flex-col gap-3 p-6">
+          <i data-lucide="line-chart" class="h-10 w-10 text-primary"></i>
+          <h3 class="text-xl font-semibold">Predict health impact</h3>
+          <p class="text-sm text-muted-foreground">
+            Advanced scoring blends respiratory, water, and vector risk to prioritise interventions before crises hit.
+          </p>
+        </div>
+      </div>
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-content flex flex-col gap-3 p-6">
+          <i data-lucide="shield-check" class="h-10 w-10 text-primary"></i>
+          <h3 class="text-xl font-semibold">Close the loop fast</h3>
+          <p class="text-sm text-muted-foreground">
+            Route complaints, sync with municipal officers, and keep citizens updated with verifiable response times.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

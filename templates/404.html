@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}404 – Page Not Found{% endblock %}
+
+{% block body %}
+<div class="flex min-h-screen items-center justify-center" style="background: hsl(var(--background));">
+  <div class="text-center">
+    <h1 class="mb-4 text-4xl font-bold text-foreground">404</h1>
+    <p class="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
+    <a href="{{ url_for('splash') }}" class="text-primary underline hover:text-primary/80">
+      Return to Home
+    </a>
+  </div>
+</div>
+{% endblock %}

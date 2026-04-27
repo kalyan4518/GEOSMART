@@ -1,0 +1,89 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Flask
+instance/
+.webassets-cache
+
+# Testing
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Large model files (use Git LFS)
+*.pt
+*.h5
+*.pth
+*.pkl
+
+# Temporary Git installation/download artifacts
+PortableGit/
+PortableGit.exe
+PortableGit-copy.exe
+mingit/
+MinGit.zip
+push_to_github.py
+push_to_github_api.py
+PUSH_INSTRUCTIONS.md
+GITHUB_PUSH_GUIDE.md
+
+# Uploads and temporary files
+uploads/
+temp/
+tmp/
+
+# Node modules (if any frontend build exists)
+node_modules/

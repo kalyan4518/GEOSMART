@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Municipal Hub – GEOSMART{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-background via-background to-primary/15">
+  <header class="border-b border-primary/20 bg-card/60 backdrop-blur">
+    <div class="container mx-auto flex flex-col gap-4 px-4 py-6 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-icon hover:bg-primary/10">
+          <i data-lucide="leaf" class="h-5 w-5"></i>
+        </a>
+        <div>
+          <p class="text-sm uppercase tracking-wide text-primary">Connect with civic teams</p>
+          <h1 class="text-3xl font-semibold">Municipal response hub</h1>
+        </div>
+      </div>
+      <span class="badge badge-outline" id="updateBadge"></span>
+    </div>
+  </header>
+
+  <main class="container mx-auto grid gap-6 px-4 py-8 lg:grid-cols-[420px_1fr]">
+    <div class="card bg-card/70 backdrop-blur-sm">
+      <div class="card-header">
+        <div class="card-title">Find the right officer</div>
+        <p class="card-description">Search by name, zone, or designation to escalate issues quickly.</p>
+      </div>
+      <div class="card-content space-y-4">
+        <div class="space-y-2">
+          <label class="label" for="search">Search directory</label>
+          <input class="input" id="search" placeholder="Eg. Health Inspector or Ward 14" oninput="filterContacts()" />
+        </div>
+        <div class="separator"></div>
+        <div class="space-y-4" id="contactsList">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+      <div class="card-footer text-xs text-muted-foreground">
+        City hotline: 1533 · Emergency: 104 · Available 24/7
+      </div>
+    </div>
+
+    <div class="grid gap-6">
+      <div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title flex items-center gap-2">
+              <i data-lucide="route" class="h-5 w-5 text-primary"></i> Route optimization map
+            </div>
+            <p class="card-description">A*-optimized dispatch path from the nearest depot to the selected hotspot.</p>
+          </div>
+          <div class="card-content">
+            <div id="routeMap" class="map-canvas"></div>
+          </div>
+        </div>
+
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title">Dispatch recommendation</div>
+            <p class="card-description">Choose a hotspot to generate the shortest response route.</p>
+          </div>
+          <div class="card-content space-y-4">
+            <div class="rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-sm text-muted-foreground">Selected hotspot</p>
+                  <p class="text-lg font-semibold" id="routeTitle">Waiting for hotspot data</p>
+                </div>
+                <span class="badge badge-outline" id="routeSeverity">--</span>
+              </div>
+              <div class="mt-4 grid gap-3 sm:grid-cols-3 text-sm">
+                <div>
+                  <p class="text-xs text-muted-foreground">Depot</p>
+                  <p class="font-medium" id="routeDepot">--</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">Distance</p>
+                  <p class="font-medium" id="routeDistance">--</p>
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">ETA</p>
+                  <p class="font-medium" id="routeEta">--</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p class="mb-2 text-sm font-medium">Route stops</p>
+              <div class="space-y-2" id="routeStops">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
+            <div class="separator"></div>
+
+            <div>
+              <p class="mb-2 text-sm font-medium">Hotspot queue</p>
+              <div class="space-y-3" id="hotspotQueue">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header flex flex-col gap-1">
+          <div class="card-title">Ward operations calendar</div>
+          <p class="card-description">Current status of critical waste management activities.</p>
+        </div>
+        <div class="card-content space-y-4">
+          <div class="rounded-lg border border-border/70 bg-background/70 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-sm font-semibold">Wet waste pickup</p>
+              <span class="badge badge-outline">On track</span>
+            </div>
+            <p class="mt-1 text-xs text-muted-foreground">Daily · 6:00 AM - 9:00 AM</p>
+            <p class="mt-2 text-sm text-muted-foreground">Primary collection from residential and market clusters.</p>
+          </div>
+          <div class="rounded-lg border border-border/70 bg-background/70 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-sm font-semibold">Dry waste pickup</p>
+              <span class="badge badge-secondary">Attention</span>
+            </div>
+            <p class="mt-1 text-xs text-muted-foreground">Every Tuesday &amp; Friday · 9:00 AM - 2:00 PM</p>
+            <p class="mt-2 text-sm text-muted-foreground">MRF teams collect segregated recyclables.</p>
+          </div>
+          <div class="rounded-lg border border-border/70 bg-background/70 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-sm font-semibold">Hazardous &amp; e-waste</p>
+              <span class="badge badge-outline">On track</span>
+            </div>
+            <p class="mt-1 text-xs text-muted-foreground">1st &amp; 3rd Saturday · 3:00 PM - 6:00 PM</p>
+            <p class="mt-2 text-sm text-muted-foreground">Special pickup with PPE and sealed vehicles.</p>
+          </div>
+          <div class="rounded-lg border border-border/70 bg-background/70 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-sm font-semibold">Community awareness drive</p>
+              <span class="badge badge-destructive">Delayed</span>
+            </div>
+            <p class="mt-1 text-xs text-muted-foreground">Second Sunday · 10:00 AM</p>
+            <p class="mt-2 text-sm text-muted-foreground">Door-to-door engagement and segregation audit.</p>
+          </div>
+        </div>
+        <div class="card-footer text-xs text-muted-foreground">
+          Schedules auto-refresh every 30 minutes based on fleet GPS data.
+        </div>
+      </div>
+
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header flex flex-col gap-1">
+          <div class="card-title flex items-center gap-2">
+            <i data-lucide="siren" class="h-5 w-5 text-destructive"></i> Emergency playbook
+          </div>
+          <p class="card-description">Protocol for handling priority incidents.</p>
+        </div>
+        <div class="card-content space-y-3 text-sm text-muted-foreground">
+          <div class="alert">
+            <div class="alert-title">Rapid escalation</div>
+            <div class="alert-description">
+              For chemical leaks or biomedical hazards, alert the zonal health officer and the state pollution control board simultaneously. Ensure PPE kits and hazmat transport are dispatched.
+            </div>
+          </div>
+          <div class="alert">
+            <div class="alert-title">Community messaging</div>
+            <div class="alert-description">
+              Push SMS alerts to residents within 1 km radius. Advise to avoid water usage until clearance.
+            </div>
+          </div>
+          <div class="alert alert-destructive">
+            <div class="alert-title">Post-incident audit</div>
+            <div class="alert-description">
+              File closure report with photographs, waste manifests, and disposal certificates within 12 hours.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header flex flex-col gap-1">
+          <div class="card-title flex items-center gap-2">
+            <i data-lucide="users" class="h-5 w-5 text-primary"></i> Citizen engagement roster
+          </div>
+          <p class="card-description">Upcoming outreach activities with focus groups.</p>
+        </div>
+        <div class="card-content space-y-3">
+          <div class="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
+            <p class="font-medium text-foreground">Zero Waste Champions meetup</p>
+            <p class="text-xs text-muted-foreground">Saturday · 4:30 PM · Urban Living Lab</p>
+            <p class="mt-1 text-xs text-muted-foreground">Training RWA volunteers on segregation tracking app.</p>
+          </div>
+          <div class="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
+            <p class="font-medium text-foreground">School eco-club workshop</p>
+            <p class="text-xs text-muted-foreground">Wednesday · 11:00 AM · Greenfield High</p>
+            <p class="mt-1 text-xs text-muted-foreground">Hands-on learning on composting and recycling streams.</p>
+          </div>
+          <div class="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
+            <p class="font-medium text-foreground">Market waste audit walk</p>
+            <p class="text-xs text-muted-foreground">Friday · 7:00 AM · Koramangala Market</p>
+            <p class="mt-1 text-xs text-muted-foreground">Joint inspection with traders to phase out single-use plastics.</p>
+          </div>
+        </div>
+        <div class="card-footer text-xs text-muted-foreground">
+          Contact the citizen desk for slots: bbmp.citizen@bbmp.gov.in
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/municipal.js') }}"></script>
+{% endblock %}

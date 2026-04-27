@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – GEOSMART{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-background via-background to-primary/20">
+  <header class="border-b border-primary/20 bg-card/50 backdrop-blur-sm">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="shield-check" class="w-8 h-8 text-destructive"></i>
+        <span class="text-2xl font-bold bg-gradient-to-r from-destructive to-orange-400 bg-clip-text text-transparent">
+          GEOSMART ADMIN
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="badge badge-destructive">Admin</span>
+        <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-icon hover:bg-primary/10">
+          <i data-lucide="user" class="w-5 h-5"></i>
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="py-8">
+    <div class="container mx-auto px-4 space-y-8">
+      <section class="text-center animate-fade-in">
+        <h1 class="text-4xl font-bold mb-2">Command Dashboard, {{ user }}</h1>
+        <p class="text-xl text-muted-foreground">Prioritize complaints, resolve incidents, and run model operations.</p>
+      </section>
+
+      <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title text-base font-medium flex items-center gap-2">
+              <i data-lucide="message-square-warning" class="h-4 w-4 text-destructive"></i> Open complaints
+            </div>
+          </div>
+          <div class="card-content">
+            <p class="text-2xl font-semibold" id="metricAdminOpen">--</p>
+            <p class="text-xs text-muted-foreground">Pending, assigned, and in-progress tickets.</p>
+          </div>
+        </div>
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title text-base font-medium flex items-center gap-2">
+              <i data-lucide="check-check" class="h-4 w-4 text-primary"></i> Resolved complaints
+            </div>
+          </div>
+          <div class="card-content">
+            <p class="text-2xl font-semibold" id="metricAdminResolved">--</p>
+            <p class="text-xs text-muted-foreground">Total incidents marked solved by the team.</p>
+          </div>
+        </div>
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title text-base font-medium flex items-center gap-2">
+              <i data-lucide="map-pinned" class="h-4 w-4 text-destructive"></i> Active hotspots
+            </div>
+          </div>
+          <div class="card-content">
+            <p class="text-2xl font-semibold" id="metricActiveHotspots">--</p>
+            <p class="text-xs text-muted-foreground">Live clusters requiring municipal dispatch.</p>
+          </div>
+        </div>
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title text-base font-medium flex items-center gap-2">
+              <i data-lucide="route" class="h-4 w-4 text-primary"></i> Avg dispatch ETA
+            </div>
+          </div>
+          <div class="card-content">
+            <p class="text-2xl font-semibold" id="metricEta">--</p>
+            <p class="text-xs text-muted-foreground">Current average route completion estimate.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title flex items-center gap-2">
+              <i data-lucide="list-checks" class="h-5 w-5 text-primary"></i> Unresolved complaints
+            </div>
+            <p class="card-description">Use quick actions to move tickets and mark completed work as resolved.</p>
+          </div>
+          <div class="card-content space-y-4" id="adminComplaintList">
+            <p class="text-sm text-muted-foreground">Loading complaints...</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="card bg-card/70 backdrop-blur-sm">
+            <div class="card-header pb-2">
+              <div class="card-title flex items-center gap-2">
+                <i data-lucide="siren" class="h-5 w-5 text-destructive"></i> Hotspot queue
+              </div>
+              <p class="card-description">Top wards sorted by severity and report volume.</p>
+            </div>
+            <div class="card-content space-y-3" id="dashboardHotspots">
+              <p class="text-sm text-muted-foreground">Loading hotspot queue...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+{% endblock %}

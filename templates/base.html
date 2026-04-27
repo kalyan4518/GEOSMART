@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}GEOSMART{% endblock %}</title>
+  <meta name="description" content="GEOSMART - Cleaner Earth, Brighter Future" />
+
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('geosmart-theme');
+        var preferredDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = savedTheme || (preferredDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (_err) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        container: { center: true, padding: '2rem', screens: { '2xl': '1400px' } },
+        extend: {
+          colors: {
+            border:      'hsl(var(--border))',
+            input:       'hsl(var(--input))',
+            ring:        'hsl(var(--ring))',
+            background:  'hsl(var(--background))',
+            foreground:  'hsl(var(--foreground))',
+            primary:     { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+            secondary:   { DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))' },
+            destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+            muted:       { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+            accent:      { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+            popover:     { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
+            card:        { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+          },
+          borderRadius: {
+            lg: 'var(--radius)',
+            md: 'calc(var(--radius) - 2px)',
+            sm: 'calc(var(--radius) - 4px)',
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% block body %}{% endblock %}
+
+  <button
+    id="themeToggleBtn"
+    class="btn btn-outline btn-icon fixed right-5 bottom-5 z-[10000] bg-card/90 backdrop-blur-sm"
+    type="button"
+    aria-label="Toggle theme"
+    title="Switch theme"
+  >
+    <i data-lucide="moon" class="w-5 h-5"></i>
+  </button>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Common JS utilities -->
+  <script>
+    function getCurrentTheme() {
+      return document.documentElement.getAttribute('data-theme') || 'light';
+    }
+
+    function updateThemeToggleIcon() {
+      var btn = document.getElementById('themeToggleBtn');
+      if (!btn) return;
+      var nextIcon = getCurrentTheme() === 'dark' ? 'sun' : 'moon';
+      btn.innerHTML = '<i data-lucide="' + nextIcon + '" class="w-5 h-5"></i>';
+      btn.title = getCurrentTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+      btn.setAttribute('aria-label', btn.title);
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      try {
+        localStorage.setItem('geosmart-theme', theme);
+      } catch (_err) {
+        // Ignore storage failures (private mode / restricted storage)
+      }
+      updateThemeToggleIcon();
+    }
+
+    function toggleTheme() {
+      var nextTheme = getCurrentTheme() === 'dark' ? 'light' : 'dark';
+      setTheme(nextTheme);
+    }
+
+    // Initialize Lucide icons
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+
+      var themeToggleBtn = document.getElementById('themeToggleBtn');
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+      }
+      updateThemeToggleIcon();
+    });
+
+    // Toast helper
+    function showToast(title, description, duration) {
+      duration = duration || 4000;
+      var container = document.getElementById('toast-container');
+      var toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = '<div class="toast-title">' + title + '</div>' +
+                        '<div class="toast-description">' + description + '</div>';
+      container.appendChild(toast);
+      setTimeout(function() {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(function() { toast.remove(); }, 300);
+      }, duration);
+    }
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

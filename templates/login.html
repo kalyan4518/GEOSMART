@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Login – GEOSMART{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/20 p-4">
+  <div class="w-full max-w-md animate-fade-in">
+    <div class="text-center mb-8">
+      <div class="flex items-center justify-center mb-4">
+        <i data-lucide="leaf" class="w-12 h-12 text-primary animate-glow-pulse"></i>
+      </div>
+      <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
+        ♻️ GEOSMART
+      </h1>
+      <p class="text-muted-foreground">Cleaner Earth, Brighter Future</p>
+    </div>
+
+    <div class="bg-card/50 backdrop-blur-sm border border-primary/20 rounded-2xl p-8" style="box-shadow: 0 0 40px hsl(24 100% 50% / 0.1);">
+      <h2 class="text-2xl font-semibold mb-2">{{ 'Admin Login' if login_mode == 'admin' else 'User Login' }}</h2>
+      <p class="text-sm text-muted-foreground mb-6">
+        {{ 'Admin access controls complaint workflow and model training.' if login_mode == 'admin' else 'Citizen access for complaints, analysis, and tracking.' }}
+      </p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-4 space-y-2">
+            {% for category, message in messages %}
+              <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('admin_login') if login_mode == 'admin' else url_for('login') }}" class="space-y-4">
+        <div>
+          <label class="label" for="email">Email</label>
+          <input class="input mt-1" id="email" name="email" type="email" placeholder="your@email.com" required />
+        </div>
+
+        <div>
+          <label class="label" for="password">Password</label>
+          <input class="input mt-1" id="password" name="password" type="password" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit"
+          class="btn btn-default w-full transition-all duration-300 hover:scale-[1.02]"
+          style="box-shadow: 0 0 0 0 transparent;"
+          onmouseover="this.style.boxShadow='0 0 20px hsl(24 100% 50% / 0.5)'"
+          onmouseout="this.style.boxShadow='0 0 0 0 transparent'">
+          {{ 'Login as Admin' if login_mode == 'admin' else 'Login as User' }}
+        </button>
+      </form>
+
+      <div class="relative my-6">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-border"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="bg-card px-2 text-muted-foreground">or</span>
+        </div>
+      </div>
+
+      <a href="{{ url_for('demo_google_login') }}" class="btn btn-outline w-full border-primary/50 hover:bg-primary/10 hover:border-primary transition-all duration-300">
+        Sign in with Google (Demo)
+      </a>
+
+      <div class="mt-4 flex justify-center">
+        {% if login_mode == 'admin' %}
+          <a href="{{ url_for('login') }}" class="text-sm text-primary hover:underline">Switch to user login</a>
+        {% else %}
+          <a href="{{ url_for('admin_login') }}" class="text-sm text-primary hover:underline">Admin login</a>
+        {% endif %}
+      </div>
+
+      <p class="text-center text-sm text-muted-foreground mt-6">
+        Don't have an account?
+        <a href="{{ url_for('signup') }}" class="text-primary hover:underline font-medium">Create one</a>
+      </p>
+
+      {% if login_mode == 'admin' %}
+      <p class="text-center text-xs text-muted-foreground mt-3">
+        Default admin creds: admin@geosmart.local / admin123
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

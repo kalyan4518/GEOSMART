@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Analyze – GEOSMART{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-background via-background to-primary/15">
+  <header class="border-b border-primary/20 bg-card/60 backdrop-blur">
+    <div class="container mx-auto flex flex-col gap-4 px-4 py-6 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-icon hover:bg-primary/10">
+          <i data-lucide="arrow-left" class="h-5 w-5"></i>
+        </a>
+        <div>
+          <p class="text-sm uppercase tracking-wide text-primary">AI-powered waste intelligence</p>
+          <h1 class="text-3xl font-semibold">Analyze waste item</h1>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-8">
+    <div class="mx-auto max-w-3xl grid gap-6">
+      <div class="card bg-card/70 backdrop-blur-sm">
+      <div class="card-header">
+        <div class="card-title">Upload waste image</div>
+        <p class="card-description">Analyze the uploaded item and check whether it is useful for recycling.</p>
+      </div>
+      <div class="card-content space-y-5">
+        <div class="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <p class="text-sm font-medium">Upload waste image (CNN)</p>
+          <input class="input" id="cnnImageInput" type="file" accept="image/png,image/jpeg,image/webp" />
+          <div class="rounded-lg border border-border/60 bg-background/60 p-3" id="cnnPreviewWrap">
+            <img id="cnnPreviewImage" class="hidden w-full max-h-72 rounded-md object-contain" alt="Selected waste preview" />
+            <p id="cnnPreviewPlaceholder" class="text-xs text-muted-foreground">Image preview will appear here after selecting a file.</p>
+          </div>
+          <button class="btn btn-outline w-full gap-2" id="cnnAnalyzeBtn" onclick="analyzeWithCnn()">
+            <i data-lucide="scan-search" class="h-4 w-4"></i>
+            Analyze image with CNN
+          </button>
+          <p class="text-xs text-muted-foreground" id="cnnResultText">Upload an image to run CNN prediction.</p>
+          <div class="rounded-lg border border-border/60 bg-background/60 p-3 text-xs text-muted-foreground" id="cnnInsightPanel">
+            Item details and recycling usefulness will appear here after analysis.
+          </div>
+        </div>
+      </div>
+      </div>
+
+      {% if is_admin %}
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header pb-2">
+          <div class="card-title flex items-center gap-2">
+            <i data-lucide="brain" class="h-5 w-5 text-primary"></i> Train CNN model
+          </div>
+          <p class="card-description">Provide your dataset YAML path and retrain the model from this page.</p>
+        </div>
+        <div class="card-content grid gap-4 md:grid-cols-3">
+          <div class="grid gap-2 md:col-span-2">
+            <label class="label" for="trainDataPath">Dataset YAML path</label>
+            <input class="input" id="trainDataPath" placeholder="Eg. D:/datasets/waste_cls/data.yaml" />
+            <div class="flex gap-2">
+              <button class="btn btn-outline btn-sm" type="button" onclick="validateDatasetPath()">Validate dataset path</button>
+            </div>
+          </div>
+          <div class="grid gap-2">
+            <label class="label" for="trainEpochs">Epochs</label>
+            <input class="input" id="trainEpochs" type="number" min="1" value="25" />
+          </div>
+          <div class="grid gap-2">
+            <label class="label" for="trainImgsz">Image size</label>
+            <input class="input" id="trainImgsz" type="number" min="64" value="224" />
+          </div>
+          <div class="grid gap-2 md:col-span-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <label class="label" for="datasetZipInput">Or upload dataset zip</label>
+            <input class="input" id="datasetZipInput" type="file" accept=".zip" />
+            <button class="btn btn-outline btn-sm w-fit" type="button" onclick="uploadDatasetZip()">Upload zip and use detected data.yaml</button>
+            <p class="text-xs text-muted-foreground" id="datasetValidationText">Validation summary will appear here.</p>
+          </div>
+        </div>
+        <div class="card-footer flex-col items-start gap-3">
+          <button class="btn btn-default" id="startTrainingBtn" onclick="startModelTraining()">Start model training</button>
+          <p class="text-sm text-muted-foreground" id="trainingStatusText">No training run started yet.</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.IS_ADMIN = {{ 'true' if is_admin else 'false' }};
+</script>
+<script src="{{ url_for('static', filename='js/analyze.js') }}"></script>
+{% endblock %}

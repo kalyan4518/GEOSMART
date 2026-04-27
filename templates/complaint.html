@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Complaints – GEOSMART{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-background via-background to-primary/15">
+  <header class="border-b border-primary/20 bg-card/60 backdrop-blur">
+    <div class="container mx-auto flex flex-col gap-4 px-4 py-6 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-icon hover:bg-primary/10">
+          <i data-lucide="arrow-left" class="h-5 w-5"></i>
+        </a>
+        <div>
+          <p class="text-sm uppercase tracking-wide text-primary">Resolve waste issues fast</p>
+          <h1 class="text-3xl font-semibold">Complaint desk</h1>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 text-sm">
+        <span class="badge badge-outline" id="badgeOpen">Open tickets: --</span>
+        <span class="badge badge-secondary" id="badgeCritical">Critical: --</span>
+        <span class="badge badge-default" id="badgeResolved">Resolved: --</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto grid gap-6 px-4 py-8 lg:grid-cols-[430px_1fr]">
+    <div class="grid gap-6">
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header">
+          <div class="card-title">Lodge a complaint</div>
+          <p class="card-description">Submit photo evidence, capture live coordinates, and trigger ward-level validation.</p>
+        </div>
+        <div class="card-content">
+          <form id="complaintForm" class="space-y-5" onsubmit="return handleComplaintSubmit(event)">
+            <div class="grid gap-2">
+              <label class="label" for="issueType">Issue type</label>
+              <select class="select" id="issueType" name="issueType">
+                <option value="collection_delay">Delayed collection</option>
+                <option value="overflow">Overflowing bin</option>
+                <option value="illegal_dumping">Illegal dumping</option>
+                <option value="hazardous_waste">Hazardous waste leak</option>
+                <option value="no_segregation">Segregation breach</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="grid gap-2">
+                <label class="label" for="priority">Priority</label>
+                <select class="select" id="priority" name="priority">
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+              <div class="grid gap-2">
+                <label class="label" for="ward">Ward</label>
+                <input class="input" id="ward" name="ward" placeholder="Eg. Ward 11" />
+              </div>
+            </div>
+
+            <div class="grid gap-2">
+              <label class="label" for="complaintLocation">Exact address or landmark</label>
+              <input class="input" id="complaintLocation" name="location" placeholder="Eg. 7th Cross, near Eco Park" />
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="grid gap-2">
+                <label class="label" for="latitude">Latitude</label>
+                <input class="input" id="latitude" name="latitude" placeholder="Auto-captured" readonly />
+              </div>
+              <div class="grid gap-2">
+                <label class="label" for="longitude">Longitude</label>
+                <input class="input" id="longitude" name="longitude" placeholder="Auto-captured" readonly />
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-outline w-full gap-2" id="captureLocationBtn" onclick="captureLocation()">
+              <i data-lucide="locate-fixed" class="h-4 w-4"></i>
+              Capture my location
+            </button>
+
+            <div class="grid gap-2">
+              <label class="label" for="evidenceImage">Photo evidence</label>
+              <input class="input" id="evidenceImage" name="image" type="file" accept="image/png,image/jpeg,image/webp" />
+              <p class="text-xs text-muted-foreground" id="imageMeta">Attach a clear image so the verification engine can score the report.</p>
+            </div>
+
+            <div class="grid gap-2">
+              <label class="label" for="description">Describe the issue</label>
+              <textarea class="textarea" id="description" name="description" rows="4"
+                placeholder="Explain what happened, when it started, and any supporting context."></textarea>
+            </div>
+
+            <div class="grid gap-2">
+              <label class="label" for="contact">Contact (optional)</label>
+              <input class="input" id="contact" name="contact" placeholder="Eg. Name, phone or email" />
+            </div>
+
+            <button type="submit" class="btn btn-default w-full gap-2">
+              <i data-lucide="clipboard-list" class="h-4 w-4"></i>
+              Submit verified report
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header pb-2">
+          <div class="card-title flex items-center gap-2">
+            <i data-lucide="scan-search" class="h-5 w-5 text-primary"></i> AI verification preview
+          </div>
+          <p class="card-description">GEOSMART checks evidence strength, predicted waste type, and routing confidence.</p>
+        </div>
+        <div class="card-content" id="verificationPanel">
+          <div class="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+            Submit a report with image and GPS data to view the verification score and route recommendation.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-6">
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header flex flex-col gap-1">
+          <div class="card-title">Live status board</div>
+          <p class="card-description">Snapshot of all complaints logged for the ward cluster.</p>
+        </div>
+        <div class="card-content grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div class="rounded-xl border border-primary/30 bg-primary/10 p-4">
+            <p class="text-xs text-muted-foreground">Total complaints</p>
+            <p class="text-2xl font-semibold" id="metricTotal">--</p>
+          </div>
+          <div class="rounded-xl border border-primary/30 bg-primary/10 p-4">
+            <p class="text-xs text-muted-foreground">Open</p>
+            <p class="text-2xl font-semibold" id="metricOpen">--</p>
+          </div>
+          <div class="rounded-xl border border-primary/30 bg-primary/10 p-4">
+            <p class="text-xs text-muted-foreground">Critical</p>
+            <p class="text-2xl font-semibold text-destructive" id="metricCritical">--</p>
+          </div>
+          <div class="rounded-xl border border-primary/30 bg-primary/10 p-4">
+            <p class="text-xs text-muted-foreground">Resolved</p>
+            <p class="text-2xl font-semibold text-emerald-500" id="metricResolved">--</p>
+          </div>
+          <div class="rounded-xl border border-primary/30 bg-primary/10 p-4">
+            <p class="text-xs text-muted-foreground">Verified / hotspots</p>
+            <p class="text-2xl font-semibold" id="metricVerified">--</p>
+            <p class="text-xs text-muted-foreground" id="metricHotspots">--</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title flex items-center gap-2">
+              <i data-lucide="map-pinned" class="h-5 w-5 text-primary"></i> Geo hotspot map
+            </div>
+            <p class="card-description">Complaint evidence, cluster density, and current reporting position.</p>
+          </div>
+          <div class="card-content">
+            <div id="complaintMap" class="map-canvas"></div>
+          </div>
+        </div>
+
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title">Active hotspots</div>
+            <p class="card-description">Priority zones ranked by severity and open complaints.</p>
+          </div>
+          <div class="card-content space-y-3" id="hotspotList">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header pb-2">
+          <div class="card-title">Recent complaints</div>
+          <p class="card-description">Update status as field teams close the loop and monitor AI validation state.</p>
+        </div>
+        <div class="card-content space-y-4" id="complaintList">
+          <!-- Rendered by JS -->
+        </div>
+        <div class="card-footer text-xs text-muted-foreground">
+          Tickets sync with the municipal command centre every 15 minutes and route suggestions refresh from hotspot intelligence.
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.CAN_UPDATE_STATUS = {{ 'true' if can_update_status else 'false' }};
+</script>
+<script src="{{ url_for('static', filename='js/complaint.js') }}"></script>
+{% endblock %}

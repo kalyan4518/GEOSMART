@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}User Dashboard – GEOSMART{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-background via-background to-primary/20">
+  <header class="border-b border-primary/20 bg-card/50 backdrop-blur-sm">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="leaf" class="w-8 h-8 text-primary animate-glow-pulse"></i>
+        <span class="text-2xl font-bold bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
+          GEOSMART
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="badge badge-outline">User</span>
+        <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-icon hover:bg-primary/10">
+          <i data-lucide="user" class="w-5 h-5"></i>
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="py-8">
+    <div class="container mx-auto px-4 space-y-8">
+      <section class="text-center animate-fade-in">
+        <h1 class="text-4xl font-bold mb-2">Welcome, <span class="text-primary">{{ user }}</span></h1>
+        <p class="text-lg text-muted-foreground">Submit a waste complaint and track only your own reports in one place.</p>
+      </section>
+
+      <section class="grid gap-4 sm:grid-cols-3">
+        <div class="card bg-card/70 backdrop-blur-sm cursor-pointer" id="myComplaintsCard" title="View my complaint tracking">
+          <div class="card-header pb-2">
+            <div class="card-title text-base font-medium flex items-center gap-2">
+              <i data-lucide="clipboard-list" class="h-4 w-4 text-primary"></i> My complaints
+            </div>
+          </div>
+          <div class="card-content">
+            <p class="text-2xl font-semibold" id="metricMyTotal">--</p>
+            <p class="text-xs text-muted-foreground">Total reports you have submitted.</p>
+          </div>
+        </div>
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title text-base font-medium flex items-center gap-2">
+              <i data-lucide="loader" class="h-4 w-4 text-primary"></i> Open
+            </div>
+          </div>
+          <div class="card-content">
+            <p class="text-2xl font-semibold" id="metricMyOpen">--</p>
+            <p class="text-xs text-muted-foreground">Pending, assigned, and in-progress reports.</p>
+          </div>
+        </div>
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title text-base font-medium flex items-center gap-2">
+              <i data-lucide="check-check" class="h-4 w-4 text-primary"></i> Resolved
+            </div>
+          </div>
+          <div class="card-content">
+            <p class="text-2xl font-semibold" id="metricMyResolved">--</p>
+            <p class="text-xs text-muted-foreground">Reports marked resolved by municipal teams.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title flex items-center gap-2">
+              <i data-lucide="plus-circle" class="h-5 w-5 text-primary"></i> Submit a new complaint
+            </div>
+            <p class="card-description">Report waste issues with location and photo evidence for faster resolution.</p>
+          </div>
+          <div class="card-content space-y-3 text-sm text-muted-foreground">
+            <p>Use the complaint form to upload proof, auto-capture location, and receive a tracking ID.</p>
+            <p>You can monitor all your submitted reports and their latest status below.</p>
+          </div>
+          <div class="card-footer flex flex-wrap gap-3">
+            <a href="{{ url_for('complaint') }}" class="btn btn-default gap-2">
+              <i data-lucide="message-square-plus" class="h-4 w-4"></i>
+              Go to complaint form
+            </a>
+            <a href="{{ url_for('profile') }}" class="btn btn-outline gap-2">
+              <i data-lucide="user-cog" class="h-4 w-4"></i>
+              Edit profile
+            </a>
+          </div>
+        </div>
+
+        <div class="card bg-card/70 backdrop-blur-sm">
+          <div class="card-header pb-2">
+            <div class="card-title flex items-center gap-2">
+              <i data-lucide="clock-3" class="h-5 w-5 text-primary"></i> Quick links
+            </div>
+            <p class="card-description">Useful tools available for regular users.</p>
+          </div>
+          <div class="card-content grid gap-3">
+            <a href="{{ url_for('analyze') }}" class="block rounded-lg border border-primary/25 bg-background/60 px-4 py-3 transition hover:border-primary/50 hover:bg-primary/10">
+              <div class="flex items-center gap-2 text-sm font-medium">
+                <i data-lucide="scan" class="w-4 h-4 text-primary"></i>
+                Analyze waste image
+              </div>
+              <p class="mt-1 text-xs text-muted-foreground">Check waste type from an uploaded image.</p>
+            </a>
+            <a href="{{ url_for('municipal') }}" class="block rounded-lg border border-primary/25 bg-background/60 px-4 py-3 transition hover:border-primary/50 hover:bg-primary/10">
+              <div class="flex items-center gap-2 text-sm font-medium">
+                <i data-lucide="building-2" class="w-4 h-4 text-primary"></i>
+                Municipal office updates
+              </div>
+              <p class="mt-1 text-xs text-muted-foreground">View hotspot queues and route updates.</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="card bg-card/70 backdrop-blur-sm" id="myComplaintTrackingSection">
+        <div class="card-header pb-2">
+          <div class="card-title flex items-center gap-2">
+            <i data-lucide="history" class="h-5 w-5 text-primary"></i> My complaint tracking
+          </div>
+          <p class="card-description">Latest status for the complaints you submitted.</p>
+        </div>
+        <div class="card-content space-y-4" id="myComplaintList">
+          <p class="text-sm text-muted-foreground">Loading your complaints...</p>
+        </div>
+      </section>
+
+      <section class="mb-2 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header pb-2">
+          <div class="card-title flex items-center gap-2">
+            <i data-lucide="map-pinned" class="h-5 w-5 text-primary"></i> Community hotspot snapshot
+          </div>
+          <p class="card-description">Shared ward-level view to help you understand nearby issue intensity.</p>
+        </div>
+        <div class="card-content grid gap-4 md:grid-cols-2">
+          <div class="rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <p class="text-xs text-muted-foreground">Top hotspot</p>
+            <p class="mt-1 text-xl font-semibold" id="topHotspotTitle">Waiting for telemetry</p>
+            <p class="mt-2 text-sm text-muted-foreground" id="topHotspotMeta">No route assigned yet.</p>
+          </div>
+          <div class="rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-xs text-muted-foreground">Dispatch recommendation</p>
+              <span class="badge badge-outline" id="topHotspotSeverity">--</span>
+            </div>
+            <div class="mt-4 grid gap-3 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-muted-foreground">Depot</span>
+                <span class="font-medium" id="topHotspotDepot">--</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-muted-foreground">ETA</span>
+                <span class="font-medium" id="topHotspotEta">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-card/70 backdrop-blur-sm">
+        <div class="card-header pb-2">
+          <div class="card-title">Hotspot queue</div>
+          <p class="card-description">Current ward queue from recent complaint activity.</p>
+        </div>
+        <div class="card-content space-y-3" id="dashboardHotspots">
+          <p class="text-sm text-muted-foreground">Loading hotspot queue...</p>
+        </div>
+      </div>
+      </section>
+
+      <section class="mb-12 overflow-hidden rounded-2xl border border-primary/20">
+      <div class="flex animate-scroll-left">
+        {% if carousel_images %}
+          {% for image_url in carousel_images %}
+          <div class="flex-shrink-0 w-80 h-48"><img src="{{ image_url }}" alt="Uploaded image" class="w-full h-full object-cover" /></div>
+          {% endfor %}
+          {% for image_url in carousel_images %}
+          <div class="flex-shrink-0 w-80 h-48"><img src="{{ image_url }}" alt="Uploaded image" class="w-full h-full object-cover" /></div>
+          {% endfor %}
+        {% else %}
+          <div class="w-full p-4 text-sm text-muted-foreground">Upload complaint images to see your own images scroll here.</div>
+        {% endif %}
+      </div>
+      </section>
+      </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
