@@ -53,6 +53,7 @@ coverage.xml
 .env
 .env.local
 .env.*.local
+cookies.txt
 
 # Database
 *.db
@@ -65,6 +66,7 @@ logs/
 
 # Large model files (use Git LFS)
 *.pt
+!models/waste_model.pt
 *.h5
 *.pth
 *.pkl
@@ -82,8 +84,15 @@ GITHUB_PUSH_GUIDE.md
 
 # Uploads and temporary files
 uploads/
+static/uploads/
 temp/
 tmp/
+*.tmp
+*.bak
+
+# Local test and application data
+geosmart.db
+*.sqlite-journal
 
 # Node modules (if any frontend build exists)
 node_modules/

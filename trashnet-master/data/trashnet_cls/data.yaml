@@ -1,4 +1,4 @@
-path: D:/shudhpruthvi-eco-glow-main/flask_app/trashnet-master/data/trashnet_cls
+path: .
 train: train
 val: val
 test: test

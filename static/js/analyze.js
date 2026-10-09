@@ -3,6 +3,12 @@
 var isAdminUser = window.IS_ADMIN === true;
 var previewObjectUrl = null;
 
+function escapeAnalyzeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>\"']/g, function(char) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[char];
+  });
+}
+
 function analyzeWithCnn() {
   var input = document.getElementById('cnnImageInput');
   var resultText = document.getElementById('cnnResultText');
@@ -28,7 +34,11 @@ function analyzeWithCnn() {
   })
     .then(function(r) {
       return r.json().then(function(payload) {
-        if (!r.ok) throw new Error(payload.error || 'CNN analysis failed');
+        if (!r.ok) {
+          var error = new Error(payload.error || 'CNN analysis failed');
+          error.status = r.status;
+          throw error;
+        }
         return payload;
       });
     })
@@ -43,19 +53,22 @@ function analyzeWithCnn() {
         '<div class="space-y-2">' +
           '<div class="flex items-center justify-between gap-2">' +
             '<p class="text-sm font-medium">Item information</p>' +
-            '<span class="badge ' + recycleBadgeClass + '">' + recycleLabel + '</span>' +
+            '<span class="badge ' + recycleBadgeClass + '">' + escapeAnalyzeHtml(recycleLabel) + '</span>' +
           '</div>' +
-          '<p>' + (result.itemInfo || 'No additional item information available.') + '</p>' +
-          '<p><strong>Confidence note:</strong> ' + (result.confidenceNote || 'No confidence guidance available.') + '</p>' +
-          '<p><strong>Guidance:</strong> ' + (result.guidance || 'Please segregate carefully before disposal.') + '</p>' +
+          '<p>' + escapeAnalyzeHtml(result.itemInfo || 'No additional item information available.') + '</p>' +
+          '<p><strong>Confidence note:</strong> ' + escapeAnalyzeHtml(result.confidenceNote || 'No confidence guidance available.') + '</p>' +
+          '<p><strong>Guidance:</strong> ' + escapeAnalyzeHtml(result.guidance || 'Please segregate carefully before disposal.') + '</p>' +
         '</div>';
 
       showToast('CNN analysis complete', 'Predicted class: ' + result.predictedType);
     })
     .catch(function(err) {
-      resultText.textContent = err.message;
-      insightPanel.textContent = 'Could not determine recycling suitability for this item.';
-      showToast('CNN analysis failed', err.message);
+      var unavailable = err.status === 503;
+      resultText.textContent = (unavailable ? 'Model unavailable: ' : 'Prediction failed: ') + err.message;
+      insightPanel.textContent = unavailable
+        ? 'A compatible waste classification model is not ready. No prediction was produced.'
+        : 'Could not determine recycling suitability for this item.';
+      showToast(unavailable ? 'Model unavailable' : 'CNN analysis failed', err.message);
     })
     .finally(function() {
       button.disabled = false;
